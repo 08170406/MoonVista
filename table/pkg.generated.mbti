@@ -1,0 +1,52 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "08170406/moonvista/table"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn from_records(Array[String], Array[Array[String]]) -> Result[Table, TableError]
+
+pub fn infer_type(Array[String]) -> ColType
+
+// Errors
+
+// Types and methods
+pub(all) enum Cell {
+  I(Int)
+  F(Double)
+  B(Bool)
+  D(String)
+  S(String)
+  Null
+} derive(Eq, @debug.Debug)
+
+pub(all) enum ColType {
+  Int
+  Float
+  Bool
+  Date
+  Str
+  Empty
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Column {
+  name : String
+  ctype : ColType
+  nulls : Int
+  confidence : Double
+}
+
+pub(all) struct Table {
+  columns : Array[Column]
+  rows : Array[Array[Cell]]
+}
+
+pub(all) enum TableError {
+  TooManyFields(Int, Int, Int)
+}
+
+// Type aliases
+
+// Traits

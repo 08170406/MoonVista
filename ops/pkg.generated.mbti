@@ -1,0 +1,89 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "08170406/moonvista/ops"
+
+import {
+  "08170406/moonvista/table",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn cell_at(View, Int, Int) -> @table.Cell?
+
+pub fn cell_to_string(@table.Cell) -> String
+
+pub fn column_at(View, Int) -> @table.Column?
+
+pub fn column_count(View) -> Int
+
+pub fn export_csv(View) -> String
+
+pub fn export_json(View) -> String
+
+pub fn filter(View, Filter) -> Result[View, OpsError]
+
+pub fn from_records(Array[String], Array[Array[String]]) -> Result[View, @table.TableError]
+
+pub fn from_table(@table.Table) -> View
+
+pub fn hide_columns(View, Array[String]) -> Result[View, OpsError]
+
+pub fn project(View, Array[String]) -> Result[View, OpsError]
+
+pub fn row_count(View) -> Int
+
+pub fn search(View, String) -> View
+
+pub fn sort(View, Array[SortKey]) -> Result[View, OpsError]
+
+pub fn source_row_index(View, Int) -> Int?
+
+pub fn stats(View, String) -> Result[ColumnStats, OpsError]
+
+// Errors
+
+// Types and methods
+pub(all) struct ColumnStats {
+  count : Int
+  nulls : Int
+  unique : Int
+  min : String?
+  max : String?
+  mean : Double?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Filter {
+  column : String
+  op : FilterOp
+  value : String
+}
+
+pub(all) enum FilterOp {
+  Eq
+  Ne
+  Contains
+  Gt
+  Ge
+  Lt
+  Le
+  IsNull
+  IsNotNull
+} derive(Eq, @debug.Debug)
+
+pub(all) enum OpsError {
+  UnknownColumn(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SortKey {
+  column : String
+  descending : Bool
+}
+
+pub struct View {
+  table : @table.Table
+  row_indices : Array[Int]
+  column_indices : Array[Int]
+}
+
+// Type aliases
+
+// Traits

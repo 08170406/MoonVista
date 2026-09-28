@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "08170406/moonvista/loaders"
+
+import {
+  "08170406/moonvista/table",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn parse_csv(String) -> Result[@table.Table, LoadError]
+
+pub fn parse_json(String) -> Result[@table.Table, LoadError]
+
+pub fn parse_jsonl(String) -> Result[@table.Table, LoadError]
+
+// Errors
+
+// Types and methods
+pub(all) enum LoadError {
+  EmptyInput
+  InvalidCsv(Int)
+  UnterminatedCsvQuote
+  InvalidJson
+  InvalidJsonShape
+  RaggedRow(Int, Int, Int)
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits

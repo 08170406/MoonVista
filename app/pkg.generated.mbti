@@ -1,0 +1,75 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "08170406/moonvista/app"
+
+import {
+  "08170406/moonvista/ops",
+  "08170406/moonvista/render",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn current_columns(AppState) -> Int
+
+pub fn current_rows(AppState) -> Int
+
+pub fn cursor_column(AppState) -> Int
+
+pub fn cursor_row(AppState) -> Int
+
+pub fn displayed_cell(AppState, Int, Int) -> String?
+
+pub fn draw(AppState, Int, Int) -> @render.Screen
+
+pub fn first_row(AppState) -> Int
+
+pub fn initial(@ops.View) -> AppState
+
+pub fn mode(AppState) -> AppMode
+
+pub fn should_quit(AppState) -> Bool
+
+pub fn status_message(AppState) -> String
+
+pub fn update(AppState, Key, Int) -> AppState
+
+// Errors
+
+// Types and methods
+pub(all) enum AppMode {
+  Browse
+  SearchInput
+  FilterInput
+  Help
+} derive(Eq, @debug.Debug)
+
+pub struct AppState {
+  original_view : @ops.View
+  view : @ops.View
+  cursor_row : Int
+  cursor_column : Int
+  first_row : Int
+  mode : AppMode
+  input : String
+  message : String
+  quit : Bool
+  descending : Bool
+}
+
+pub(all) enum Key {
+  Char(Char)
+  Up
+  Down
+  Left
+  Right
+  PageUp
+  PageDown
+  Home
+  End
+  Enter
+  Escape
+  Backspace
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits

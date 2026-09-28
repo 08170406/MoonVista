@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "08170406/moonvista/render"
+
+import {
+  "08170406/moonvista/ops",
+}
+
+// Values
+pub fn render(@ops.View, Int, Int, RenderOptions) -> Screen
+
+pub fn render_with_status(@ops.View, Int, Int, RenderOptions, String?) -> Screen
+
+pub fn to_ansi(Screen) -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct RenderOptions {
+  first_row : Int
+  cursor_row : Int
+  cursor_column : Int
+}
+
+pub(all) struct Screen {
+  width : Int
+  height : Int
+  lines : Array[String]
+  selected_line : Int?
+}
+
+// Type aliases
+
+// Traits
