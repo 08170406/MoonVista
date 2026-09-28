@@ -12,6 +12,26 @@ pub(all) struct SortKey {
 }
 
 ///|
+pub(all) enum FilterOp {
+  Eq
+  Ne
+  Contains
+  Gt
+  Ge
+  Lt
+  Le
+  IsNull
+  IsNotNull
+} derive(Eq, Debug)
+
+///|
+pub(all) struct Filter {
+  column : String
+  op : FilterOp
+  value : String
+}
+
+///|
 pub(all) enum OpsError {
   UnknownColumn(String)
 } derive(Eq, Debug)
@@ -183,4 +203,131 @@ pub fn sort(view : View, keys : Array[SortKey]) -> Result[View, OpsError] {
     row_indices: sorted_rows,
     column_indices: view.column_indices.copy(),
   })
+}
+
+///|
+fn contains_text(text : String, needle : String) -> Bool {
+  let text_chars = text.to_array()
+  let needle_chars = needle.to_array()
+  if needle_chars.is_empty() {
+    return true
+  }
+  if needle_chars.length() > text_chars.length() {
+    return false
+  }
+  for start in 0..<(text_chars.length() - needle_chars.length() + 1) {
+    let mut matches = true
+    for offset in 0..<needle_chars.length() {
+      if text_chars[start + offset] != needle_chars[offset] {
+        matches = false
+      }
+    }
+    if matches {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn compare_cell_to_literal(
+  cell : @table.Cell,
+  literal : String,
+  ctype : @table.ColType,
+) -> Int? {
+  match (cell, ctype) {
+    (@table.Cell::Null, _) => None
+    (@table.Cell::I(value), @table.ColType::Int) =>
+      Some(compare_int(value, @string.parse_int(literal.trim()))) catch {
+        _ => None
+      }
+    (@table.Cell::F(value), @table.ColType::Float) =>
+      Some(compare_double(value, @string.parse_double(literal.trim()))) catch {
+        _ => None
+      }
+    (@table.Cell::B(value), @table.ColType::Bool) =>
+      if literal == "true" {
+        Some(compare_int(if value { 1 } else { 0 }, 1))
+      } else if literal == "false" {
+        Some(compare_int(if value { 1 } else { 0 }, 0))
+      } else {
+        None
+      }
+    (@table.Cell::D(value), @table.ColType::Date) =>
+      Some(compare_text(value, literal))
+    (@table.Cell::S(value), _) => Some(compare_text(value, literal))
+    _ => Some(compare_text(cell_to_string(cell), literal))
+  }
+}
+
+///|
+fn filter_matches(
+  cell : @table.Cell,
+  ctype : @table.ColType,
+  condition : Filter,
+) -> Bool {
+  match condition.op {
+    IsNull =>
+      match cell {
+        @table.Cell::Null => true
+        _ => false
+      }
+    IsNotNull =>
+      match cell {
+        @table.Cell::Null => false
+        _ => true
+      }
+    Contains =>
+      match cell {
+        @table.Cell::Null => false
+        _ => contains_text(cell_to_string(cell), condition.value)
+      }
+    Eq => compare_cell_to_literal(cell, condition.value, ctype) == Some(0)
+    Ne => compare_cell_to_literal(cell, condition.value, ctype) != Some(0)
+    Gt =>
+      match compare_cell_to_literal(cell, condition.value, ctype) {
+        Some(ordering) => ordering > 0
+        None => false
+      }
+    Ge =>
+      match compare_cell_to_literal(cell, condition.value, ctype) {
+        Some(ordering) => ordering >= 0
+        None => false
+      }
+    Lt =>
+      match compare_cell_to_literal(cell, condition.value, ctype) {
+        Some(ordering) => ordering < 0
+        None => false
+      }
+    Le =>
+      match compare_cell_to_literal(cell, condition.value, ctype) {
+        Some(ordering) => ordering <= 0
+        None => false
+      }
+  }
+}
+
+///|
+pub fn filter(view : View, condition : Filter) -> Result[View, OpsError] {
+  match find_column(view.table, condition.column) {
+    None => Err(UnknownColumn(condition.column))
+    Some(column_index) => {
+      let column = view.table.columns[column_index]
+      let rows : Array[Int] = []
+      for row_index in view.row_indices {
+        if filter_matches(
+            view.table.rows[row_index][column_index],
+            column.ctype,
+            condition,
+          ) {
+          rows.push(row_index)
+        }
+      }
+      Ok({
+        table: view.table,
+        row_indices: rows,
+        column_indices: view.column_indices.copy(),
+      })
+    }
+  }
 }

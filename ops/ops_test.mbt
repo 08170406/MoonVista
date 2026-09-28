@@ -36,3 +36,58 @@ test "sort reports unknown columns" {
     true,
   )
 }
+
+///|
+test "numeric and equality filters return an independent row view" {
+  let table = @table.from_records(["team", "score"], [
+    ["red", "7"],
+    ["blue", "3"],
+    ["red", "9"],
+  ]).unwrap()
+  let original = from_table(table)
+  let selected = filter(original, {
+    column: "score",
+    op: FilterOp::Ge,
+    value: "7",
+  }).unwrap()
+  assert_eq(selected.row_indices, [0, 2])
+  assert_eq(original.row_indices, [0, 1, 2])
+  let red = filter(selected, { column: "team", op: FilterOp::Eq, value: "red", }).unwrap()
+  assert_eq(red.row_indices, [0, 2])
+}
+
+///|
+test "contains and null predicates handle text and missing values" {
+  let table = @table.from_records(["name", "note"], [
+    ["Ada", "MoonBit rocks"],
+    ["Lin", ""],
+    ["Bo", "MoonVista"],
+  ]).unwrap()
+  let view = from_table(table)
+  let contains = filter(view, {
+    column: "note",
+    op: FilterOp::Contains,
+    value: "Moon",
+  }).unwrap()
+  assert_eq(contains.row_indices, [0, 2])
+  let missing = filter(view, {
+    column: "note",
+    op: FilterOp::IsNull,
+    value: "",
+  }).unwrap()
+  assert_eq(missing.row_indices, [1])
+}
+
+///|
+test "filters reject unknown columns and keep nulls out of comparisons" {
+  let table = @table.from_records(["value"], [[""], ["3"]]).unwrap()
+  let view = from_table(table)
+  assert_eq(
+    filter(view, { column: "value", op: FilterOp::Gt, value: "1", }).unwrap().row_indices,
+    [1],
+  )
+  assert_eq(
+    filter(view, { column: "missing", op: FilterOp::Eq, value: "x", }) is Err(_),
+    true,
+  )
+}

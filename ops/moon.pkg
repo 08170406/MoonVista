@@ -1,3 +1,4 @@
 import {
   "08170406/moonvista/table",
+  "moonbitlang/core/string",
 }
