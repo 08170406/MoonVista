@@ -13,14 +13,18 @@ name = "08170406/moonvista"
 
 version = "0.1.0"
 
-readme = "README.mbt.md"
+readme = "README.md"
 
-repository = ""
+repository = "https://github.com/08170406/MoonVista"
 
 license = "Apache-2.0"
 
-keywords = [ ]
+keywords = [ "moonbit", "terminal", "csv", "json", "data" ]
 
-preferred_target = "wasm"
+preferred_target = "native"
 
-description = ""
+description = "A MoonBit terminal workbench for exploring CSV, JSON, and JSONL data."
+
+import {
+  "moonbitlang/x@0.5.5",
+}

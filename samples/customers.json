@@ -1,0 +1,7 @@
+[
+  {"id":1001,"name":"Ada Lovelace","country":"United Kingdom","score":98,"note":"Early computing pioneer"},
+  {"id":1002,"name":"Lin Chen","country":"Japan","score":91,"note":"Prefers email"},
+  {"id":1003,"name":"Naomi Sato","country":"Japan","score":96,"note":"Likes, tea"},
+  {"id":1004,"name":"Arjun Rao","country":"India","score":84,"note":null},
+  {"id":1005,"name":"Isla Morgan","country":"Australia","score":89,"note":"Customer since 2024"}
+]
