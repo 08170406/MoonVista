@@ -171,3 +171,29 @@ test "statistics respect the filtered row view and handle text columns" {
   assert_eq(summary.max, Some("beta"))
   assert_eq(summary.mean, None)
 }
+
+///|
+test "CSV export quotes delimiters quotes newlines and edge whitespace" {
+  let table = @table.from_records(["name", "note"], [[" Ada ", "hi, \"there\""]]).unwrap()
+  assert_eq(
+    export_csv(from_table(table)),
+    "name,note\r\n\" Ada \",\"hi, \"\"there\"\"\"\r\n",
+  )
+}
+
+///|
+test "JSON export preserves cell types and the current view" {
+  let table = @table.from_records(["id", "score", "active", "note"], [
+    ["1", "2.5", "true", "ok"],
+    ["2", "3", "false", ""],
+  ]).unwrap()
+  let view = filter(from_table(table), {
+    column: "id",
+    op: FilterOp::Eq,
+    value: "2",
+  }).unwrap()
+  assert_eq(
+    export_json(view),
+    "[{\"id\":2,\"score\":3.0,\"active\":false,\"note\":null}]",
+  )
+}

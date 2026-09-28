@@ -194,7 +194,7 @@ pub fn infer_type(samples : Array[String]) -> ColType {
 ///|
 fn cell_from_string(value : String, ctype : ColType) -> Cell {
   let trimmed = value.trim()
-  if trimmed.is_empty() {
+  if value.is_empty() {
     Null
   } else {
     let text = "\{trimmed}"
@@ -203,7 +203,7 @@ fn cell_from_string(value : String, ctype : ColType) -> Cell {
       Float => F(@string.parse_double(trimmed)) catch { _ => S(text) }
       Bool => B(text == "true")
       Date => D(text)
-      Str => S(text)
+      Str => S(value)
       Empty => Null
     }
   }
@@ -217,15 +217,23 @@ pub fn from_records(
   let columns : Array[Column] = []
   for column_index in 0..<headers.length() {
     let samples : Array[String] = []
-    let mut nulls = 0
     for row in records {
-      if column_index >= row.length() || row[column_index].trim().is_empty() {
-        nulls = nulls + 1
-      } else {
+      if column_index < row.length() {
         samples.push(row[column_index])
       }
     }
     let (ctype, confidence) = infer_type_and_confidence(samples)
+    let mut nulls = 0
+    for row in records {
+      let is_null = if column_index >= row.length() {
+        true
+      } else {
+        cell_from_string(row[column_index], ctype) is Null
+      }
+      if is_null {
+        nulls = nulls + 1
+      }
+    }
     columns.push({ name: headers[column_index], ctype, nulls, confidence, })
   }
   let rows : Array[Array[Cell]] = []
