@@ -139,3 +139,35 @@ test "view accessors use display positions and reject out of bounds" {
   assert_eq(column_at(view, 0).unwrap().name, "name")
   assert_eq(cell_at(view, 0, 0), Some(@table.Cell::S("Ada")))
 }
+
+///|
+test "column statistics include nulls unique bounds and numeric mean" {
+  let table = @table.from_records(["score"], [["2"], ["4"], ["2"], [""]]).unwrap()
+  let summary = stats(from_table(table), "score").unwrap()
+  assert_eq(summary.count, 3)
+  assert_eq(summary.nulls, 1)
+  assert_eq(summary.unique, 2)
+  assert_eq(summary.min, Some("2"))
+  assert_eq(summary.max, Some("4"))
+  assert_eq(summary.mean.unwrap() > 2.66 && summary.mean.unwrap() < 2.67, true)
+}
+
+///|
+test "statistics respect the filtered row view and handle text columns" {
+  let table = @table.from_records(["group", "label"], [
+    ["keep", "beta"],
+    ["skip", "gamma"],
+    ["keep", "alpha"],
+  ]).unwrap()
+  let view = filter(from_table(table), {
+    column: "group",
+    op: FilterOp::Eq,
+    value: "keep",
+  }).unwrap()
+  let summary = stats(view, "label").unwrap()
+  assert_eq(summary.count, 2)
+  assert_eq(summary.unique, 2)
+  assert_eq(summary.min, Some("alpha"))
+  assert_eq(summary.max, Some("beta"))
+  assert_eq(summary.mean, None)
+}

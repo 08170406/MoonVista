@@ -32,6 +32,16 @@ pub(all) struct Filter {
 }
 
 ///|
+pub(all) struct ColumnStats {
+  count : Int
+  nulls : Int
+  unique : Int
+  min : String?
+  max : String?
+  mean : Double?
+} derive(Eq, Debug)
+
+///|
 pub(all) enum OpsError {
   UnknownColumn(String)
 } derive(Eq, Debug)
@@ -458,5 +468,74 @@ pub fn cell_at(
     Some(
       view.table.rows[view.row_indices[row_position]][view.column_indices[column_position]],
     )
+  }
+}
+
+///|
+pub fn stats(
+  view : View,
+  column_name : String,
+) -> Result[ColumnStats, OpsError] {
+  match find_column(view.table, column_name) {
+    None => Err(UnknownColumn(column_name))
+    Some(column_index) => {
+      let ctype = view.table.columns[column_index].ctype
+      let unique_values = @hashset.HashSet([])
+      let mut count = 0
+      let mut nulls = 0
+      let mut numeric_count = 0
+      let mut sum = 0.0
+      let mut min_cell : @table.Cell? = None
+      let mut max_cell : @table.Cell? = None
+      for row_index in view.row_indices {
+        let cell = view.table.rows[row_index][column_index]
+        match cell {
+          @table.Cell::Null => nulls = nulls + 1
+          _ => {
+            count = count + 1
+            let _ = unique_values.add_and_check(cell_to_string(cell))
+            match min_cell {
+              None => min_cell = Some(cell)
+              Some(current) =>
+                if compare_non_null_cells(cell, current, ctype) < 0 {
+                  min_cell = Some(cell)
+                }
+            }
+            match max_cell {
+              None => max_cell = Some(cell)
+              Some(current) =>
+                if compare_non_null_cells(cell, current, ctype) > 0 {
+                  max_cell = Some(cell)
+                }
+            }
+            match (ctype, cell) {
+              (@table.ColType::Int, @table.Cell::I(value)) => {
+                sum = sum + value.to_double()
+                numeric_count = numeric_count + 1
+              }
+              (@table.ColType::Float, @table.Cell::F(value)) => {
+                sum = sum + value
+                numeric_count = numeric_count + 1
+              }
+              _ => ()
+            }
+          }
+        }
+      }
+      let min = match min_cell {
+        Some(cell) => Some(cell_to_string(cell))
+        None => None
+      }
+      let max = match max_cell {
+        Some(cell) => Some(cell_to_string(cell))
+        None => None
+      }
+      let mean = if numeric_count == 0 {
+        None
+      } else {
+        Some(sum / numeric_count.to_double())
+      }
+      Ok({ count, nulls, unique: unique_values.length(), min, max, mean, })
+    }
   }
 }
