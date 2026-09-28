@@ -66,6 +66,17 @@ pub fn from_table(table : @table.Table) -> View {
 }
 
 ///|
+pub fn from_records(
+  headers : Array[String],
+  records : Array[Array[String]],
+) -> Result[View, @table.TableError] {
+  match @table.from_records(headers, records) {
+    Ok(table) => Ok(from_table(table))
+    Err(error) => Err(error)
+  }
+}
+
+///|
 fn find_column(table : @table.Table, name : String) -> Int? {
   for index, column in table.columns {
     if column.name == name {
