@@ -1,5 +1,5 @@
 ///|
-pub(all) struct View {
+pub struct View {
   table : @table.Table
   row_indices : Array[Int]
   column_indices : Array[Int]
@@ -329,5 +329,134 @@ pub fn filter(view : View, condition : Filter) -> Result[View, OpsError] {
         column_indices: view.column_indices.copy(),
       })
     }
+  }
+}
+
+///|
+pub fn project(view : View, columns : Array[String]) -> Result[View, OpsError] {
+  let selected : Array[Int] = []
+  for name in columns {
+    match find_column(view.table, name) {
+      None => return Err(UnknownColumn(name))
+      Some(column_index) => {
+        let mut is_visible = false
+        for selected_index in selected {
+          if selected_index == column_index {
+            is_visible = true
+          }
+        }
+        if !is_visible {
+          selected.push(column_index)
+        }
+      }
+    }
+  }
+  Ok({
+    table: view.table,
+    row_indices: view.row_indices.copy(),
+    column_indices: selected,
+  })
+}
+
+///|
+pub fn hide_columns(
+  view : View,
+  columns : Array[String],
+) -> Result[View, OpsError] {
+  for name in columns {
+    if find_column(view.table, name) is None {
+      return Err(UnknownColumn(name))
+    }
+  }
+  let selected : Array[Int] = []
+  for column_index in view.column_indices {
+    let mut is_hidden = false
+    for name in columns {
+      if view.table.columns[column_index].name == name {
+        is_hidden = true
+      }
+    }
+    if !is_hidden {
+      selected.push(column_index)
+    }
+  }
+  Ok({
+    table: view.table,
+    row_indices: view.row_indices.copy(),
+    column_indices: selected,
+  })
+}
+
+///|
+pub fn search(view : View, query : String) -> View {
+  let rows : Array[Int] = []
+  if query.is_empty() {
+    for row_index in view.row_indices {
+      rows.push(row_index)
+    }
+  } else {
+    for row_index in view.row_indices {
+      let mut matches = false
+      for column_index in view.column_indices {
+        let cell = view.table.rows[row_index][column_index]
+        if contains_text(cell_to_string(cell), query) {
+          matches = true
+        }
+      }
+      if matches {
+        rows.push(row_index)
+      }
+    }
+  }
+  {
+    table: view.table,
+    row_indices: rows,
+    column_indices: view.column_indices.copy(),
+  }
+}
+
+///|
+pub fn row_count(view : View) -> Int {
+  view.row_indices.length()
+}
+
+///|
+pub fn column_count(view : View) -> Int {
+  view.column_indices.length()
+}
+
+///|
+pub fn source_row_index(view : View, row_position : Int) -> Int? {
+  if row_position < 0 || row_position >= view.row_indices.length() {
+    None
+  } else {
+    Some(view.row_indices[row_position])
+  }
+}
+
+///|
+pub fn column_at(view : View, column_position : Int) -> @table.Column? {
+  if column_position < 0 || column_position >= view.column_indices.length() {
+    None
+  } else {
+    Some(view.table.columns[view.column_indices[column_position]])
+  }
+}
+
+///|
+pub fn cell_at(
+  view : View,
+  row_position : Int,
+  column_position : Int,
+) -> @table.Cell? {
+  if row_position < 0 ||
+    row_position >= view.row_indices.length() ||
+    column_position < 0 ||
+    column_position >= view.column_indices.length() {
+    None
+  } else {
+    Some(
+      view.table.rows[view.row_indices[row_position]][view.column_indices[column_position]],
+    )
   }
 }

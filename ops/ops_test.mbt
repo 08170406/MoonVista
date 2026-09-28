@@ -91,3 +91,51 @@ test "filters reject unknown columns and keep nulls out of comparisons" {
     true,
   )
 }
+
+///|
+test "projection preserves requested order and source table" {
+  let table = @table.from_records(["id", "name", "city"], [
+    ["1", "Ada", "Paris"],
+    ["2", "Lin", "Tokyo"],
+  ]).unwrap()
+  let original = from_table(table)
+  let projected = project(original, ["city", "id"]).unwrap()
+  assert_eq(projected.column_indices, [2, 0])
+  assert_eq(projected.row_indices, [0, 1])
+  assert_eq(original.column_indices, [0, 1, 2])
+}
+
+///|
+test "hide columns removes only the requested visible fields" {
+  let table = @table.from_records(["id", "name", "city"], [
+    ["1", "Ada", "Paris"],
+  ]).unwrap()
+  let hidden = hide_columns(from_table(table), ["name"]).unwrap()
+  assert_eq(hidden.column_indices, [0, 2])
+}
+
+///|
+test "search matches visible cells and empty query keeps the view" {
+  let table = @table.from_records(["name", "city"], [
+    ["Ada", "Paris"],
+    ["Lin", "Tokyo"],
+    ["Bo", "Parma"],
+  ]).unwrap()
+  let view = from_table(table)
+  assert_eq(search(view, "Par").row_indices, [0, 2])
+  assert_eq(search(view, "").row_indices, [0, 1, 2])
+  let projected = project(view, ["name"]).unwrap()
+  assert_eq(search(projected, "Tokyo").row_indices, [])
+}
+
+///|
+test "view accessors use display positions and reject out of bounds" {
+  let table = @table.from_records(["name"], [["Ada"]]).unwrap()
+  let view = from_table(table)
+  assert_eq(row_count(view), 1)
+  assert_eq(column_count(view), 1)
+  assert_eq(source_row_index(view, 0), Some(0))
+  assert_eq(source_row_index(view, 1), None)
+  assert_eq(column_at(view, 0).unwrap().name, "name")
+  assert_eq(cell_at(view, 0, 0), Some(@table.Cell::S("Ada")))
+}
