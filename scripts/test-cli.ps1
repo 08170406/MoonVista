@@ -22,7 +22,7 @@ try {
     throw "CLI smoke check failed: filtered and sorted JSON was incorrect."
   }
 
-  $outPath = Join-Path $env:TEMP ("moonvista-export-" + [guid]::NewGuid().ToString("N") + ".json")
+  $outPath = Join-Path ([System.IO.Path]::GetTempPath()) ("moonvista-export-" + [guid]::NewGuid().ToString("N") + ".json")
   try {
     & moon run cmd/main -- $inputPath --filter country = Japan --export json --out $outPath
     if ($LASTEXITCODE -ne 0) {
