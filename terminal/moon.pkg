@@ -1,0 +1,9 @@
+import {
+  "moonbitlang/x/fs",
+  "moonbitlang/x/unicode",
+}
+
+options(
+  "native-stub": [ "console.c" ],
+  targets: { "console.mbt": [ "native" ] },
+)

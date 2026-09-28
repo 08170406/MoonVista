@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "08170406/moonvista/terminal"
+
+// Values
+pub fn read_stdin_line() -> StdinLine
+
+pub fn write_export_file(String, String) -> Int
+
+// Errors
+
+// Types and methods
+pub enum StdinLine {
+  EndOfInput
+  TooLong
+  Line(String)
+}
+
+// Type aliases
+
+// Traits

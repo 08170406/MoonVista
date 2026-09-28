@@ -2,4 +2,12 @@
 //   "08170406/moonvista" @lib,
 // }
 
+import {
+  "08170406/moonvista/app",
+  "08170406/moonvista/cli",
+  "08170406/moonvista/terminal",
+  "moonbitlang/core/env",
+  "moonbitlang/x/sys",
+}
+
 pkgtype(kind: "executable")
