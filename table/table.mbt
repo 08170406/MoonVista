@@ -24,7 +24,7 @@ pub(all) enum Cell {
   D(String)
   S(String)
   Null
-}
+} derive(Eq, Debug)
 
 ///|
 pub(all) struct Table {
