@@ -175,6 +175,17 @@ pub fn render(
   height : Int,
   options : RenderOptions,
 ) -> Screen {
+  render_with_status(view, width, height, options, None)
+}
+
+///|
+pub fn render_with_status(
+  view : @ops.View,
+  width : Int,
+  height : Int,
+  options : RenderOptions,
+  status_override : String?,
+) -> Screen {
   let safe_width = max_int(0, width)
   let safe_height = max_int(0, height)
   let first_row = min_int(@ops.row_count(view), max_int(0, options.first_row))
@@ -183,18 +194,18 @@ pub fn render(
   let mut selected_line : Int? = None
   let mut visible_rows = 0
   if safe_height == 1 {
-    lines.push(
-      truncate_text(
+    let status = match status_override {
+      Some(value) => value
+      None =>
         render_status(
           view,
           first_row,
           0,
           options.cursor_row,
           options.cursor_column,
-        ),
-        safe_width,
-      ),
-    )
+        )
+    }
+    lines.push(truncate_text(status, safe_width))
   } else if safe_height >= 2 {
     lines.push(render_header(view, widths))
     lines.push(render_divider(widths))
@@ -209,18 +220,18 @@ pub fn render(
       lines.push(render_row(view, row_position, widths, selected))
     }
     if safe_height >= 3 {
-      lines.push(
-        truncate_text(
+      let status = match status_override {
+        Some(value) => value
+        None =>
           render_status(
             view,
             first_row,
             visible_rows,
             options.cursor_row,
             options.cursor_column,
-          ),
-          safe_width,
-        ),
-      )
+          )
+      }
+      lines.push(truncate_text(status, safe_width))
     }
   }
   while lines.length() < safe_height {
