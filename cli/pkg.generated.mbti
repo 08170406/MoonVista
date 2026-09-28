@@ -1,0 +1,90 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "08170406/moonvista/cli"
+
+import {
+  "08170406/moonvista/app",
+  "08170406/moonvista/ops",
+  "08170406/moonvista/table",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn apply_options(@ops.View, CliOptions) -> Result[@ops.View, CliError]
+
+pub fn apply_repl_command(@app.AppState, String, Int) -> @app.AppState
+
+pub fn detect_input_format(String) -> Result[InputFormat, CliError]
+
+pub fn error_message(CliError) -> String
+
+pub fn execute(CliOptions) -> Result[CommandOutput, CliError]
+
+pub fn execute_table(@table.Table, CliOptions) -> Result[CommandOutput, CliError]
+
+pub fn initial_repl_state(CliOptions) -> Result[@app.AppState, CliError]
+
+pub fn load_table(String) -> Result[@table.Table, CliError]
+
+pub fn parse_args(Array[String]) -> Result[CliOptions, CliError]
+
+pub fn parse_input(String, String) -> Result[@table.Table, CliError]
+
+pub fn repl_frame(@app.AppState) -> String
+
+pub fn usage() -> String
+
+// Errors
+
+// Types and methods
+pub(all) enum CliError {
+  MissingInput
+  MissingValue(String)
+  MultipleInputs
+  UnknownOption(String)
+  InvalidSortDirection(String)
+  InvalidFilterOperator(String)
+  InvalidExportFormat(String)
+  OutputRequiresExport
+  UnsupportedInputFormat(String)
+  FileError(String)
+  InvalidInput(String)
+  UnknownColumn(String)
+  StatsWithExportOnStdout
+  ReplWithExport
+  ReplWithStats
+  OutputAlreadyExists(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliOptions {
+  input_path : String?
+  sorts : Array[@ops.SortKey]
+  filters : Array[@ops.Filter]
+  stats_columns : Array[String]
+  export_format : ExportFormat
+  output_path : String?
+  help : Bool
+  repl : Bool
+}
+
+pub(all) struct CommandOutput {
+  body : String
+  stats_report : String
+  output_path : String?
+  is_export : Bool
+}
+
+pub(all) enum ExportFormat {
+  Screen
+  Csv
+  Json
+} derive(Eq, @debug.Debug)
+
+pub(all) enum InputFormat {
+  Csv
+  Json
+  JsonLines
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
