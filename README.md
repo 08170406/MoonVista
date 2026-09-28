@@ -13,7 +13,7 @@ MoonVista is a small MoonBit terminal workbench for inspecting CSV, JSON object 
 
 ## Prerequisites
 
-- Install MoonBit CLI 0.1.20260915 or newer using the [official installation guide](https://www.moonbitlang.com/download), then confirm it is available with `moon version`.
+- Install MoonBit compiler 0.10.14 or newer using the [official installation guide](https://www.moonbitlang.com/download), then confirm it is available with `moon version --all`.
 - Native builds need a C toolchain. On Windows, install MSVC Build Tools with the C++ tools and Windows SDK; on Linux and macOS, use GCC, Clang, or another supported C compiler.
 - The repository pins `moonbitlang/x` 0.5.5 in `moon.mod`. The first build resolves this dependency.
 
@@ -56,13 +56,15 @@ MoonVista loads each input file fully into memory. It does not stream large file
 ## Development
 
 ```powershell
-moon fmt
-moon test
+moon fmt --check
 moon check --target native
+moon test --target native
 moon build --target native
 pwsh -NoProfile -File scripts/test-cli.ps1
 pwsh -NoProfile -File scripts/test-repl.ps1
 ```
+
+GitHub Actions runs the same formatting, check, test, build, CLI smoke, and REPL smoke steps on Linux and Windows with MoonBit compiler 0.10.14.
 
 The MoonBit suite currently contains 50 tests. The CLI and REPL smoke scripts exercise file export safety, output parsing, interactive commands, and overlong-line handling.
 
